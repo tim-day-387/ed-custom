@@ -59,7 +59,7 @@ static void print_line( const char * p, int len, const int pflags )
           putchar( ch ); }
       else
         {
-        char * const p = strchr( escapes, ch );
+        const char * p = strchr( escapes, ch );
         ++col; putchar('\\');
         if( ch && p ) putchar( escchars[p-escapes] );
         else

@@ -423,7 +423,7 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
     sf_p = 0x02,	/* complement previous print suffix */
     sf_r = 0x04,	/* use regex of last search (if newer) */
     sf_none = 0x08	/* make sflags != 0 if no flags at all */
-    } sflags = 0;	/* if sflags != 0, repeat last substitution */
+  } sflags = (Sflags) 0;	/* if sflags != 0, repeat last substitution */
 
   if( !check_addr_range2( addr_cnt ) ) return false;
   do {
@@ -434,18 +434,18 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
       if( ( sflags & sf_g ) || !parse_int( &n, *ibufpp, ibufpp ) || n <= 0 )
         error = true;
       else
-        { sflags |= sf_g; snum = n; }
+        { sflags = (Sflags) (sflags | sf_g); snum = n; }
       }
     else switch( **ibufpp )
       {
-      case '\n':sflags |= sf_none; break;
+      case '\n':sflags = (Sflags) (sflags | sf_none); break;
       case 'g': if( sflags & sf_g ) error = true;
-                else { sflags |= sf_g; snum = !snum; ++*ibufpp; }
+                else { sflags = (Sflags) (sflags | sf_g); snum = !snum; ++*ibufpp; }
                 break;
       case 'p': if( sflags & sf_p ) error = true;
-                else { sflags |= sf_p; ++*ibufpp; } break;
+                else { sflags = (Sflags) (sflags | sf_p); ++*ibufpp; } break;
       case 'r': if( sflags & sf_r ) error = true;
-                else { sflags |= sf_r; ++*ibufpp; } break;
+                else { sflags = (Sflags) (sflags | sf_r); ++*ibufpp; } break;
       default : if( sflags ) error = true;
       }
     if( error ) { set_error_msg( inv_com_suf ); return false; }

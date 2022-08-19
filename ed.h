@@ -39,10 +39,11 @@ typedef struct line		/* Line node */
   }
 line_t;
 
+enum Atom { UADD = 0, UDEL = 1, UMOV = 2, VMOV = 3 };
 
 typedef struct
   {
-  enum { UADD = 0, UDEL = 1, UMOV = 2, VMOV = 3 } type;
+  enum Atom type;
   line_t * head;			/* head of list */
   line_t * tail;			/* tail of list */
   }

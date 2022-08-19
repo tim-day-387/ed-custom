@@ -604,7 +604,7 @@ undo_t * push_undo_atom( const int type, const int from, const int to )
     usize = new_size;
     ustack = (undo_t *)new_buf;
     }
-  ustack[u_idx].type = type;
+  ustack[u_idx].type = (Atom) type;
   ustack[u_idx].tail = search_line_node( to );
   ustack[u_idx].head = search_line_node( from );
   enable_interrupts();
@@ -639,7 +639,7 @@ bool undo( const bool isglobal )
                  link_nodes( ustack[n].head, ustack[n].tail ); --n;
                  break;
       }
-    ustack[n].type ^= 1;
+    ustack[n].type = (Atom) (ustack[n].type ^ 1);
     }
   /* reverse undo stack order */
   for( n = 0; 2 * n < u_idx - 1; ++n )

@@ -111,14 +111,14 @@ void reset_unterminated_line( void );
 void unmark_unterminated_line( const line_t * const lp );
 
 /* defined in main.c */
-bool extended_regexp( void );
+bool extended_regexp( bool set = false, bool new_val = false );
 bool is_regular_file( const int fd );
 bool may_access_filename( const char * const name );
-bool restricted( void );
-bool scripted( void );
+bool restricted( bool set = false, bool new_val = false );
+bool scripted( bool set = false, bool new_val = false );
 void show_strerror( const char * const filename, const int errcode );
-bool strip_cr( void );
-bool traditional( void );
+bool strip_cr( bool set = false, bool new_val = false );
+bool traditional( bool set = false, bool new_val = false );
 
 /* defined in main_loop.c */
 void invalid_address( void );

@@ -46,19 +46,54 @@
 using namespace std;
 
 
-static bool extended_regexp_ = false;	/* if set, use EREs */
-static bool restricted_ = false;	/* if set, run in restricted mode */
-static bool scripted_ = false;		/* if set, suppress diagnostics,
-					   byte counts and '!' prompt */
-static bool strip_cr_ = false;		/* if set, strip trailing CRs */
-static bool traditional_ = false;	/* if set, be backwards compatible */
+/* if set, use EREs */
+auto extended_regexp( bool set, bool new_val ) -> bool {
+  static bool extended_regexp = false;
 
-/* Access functions for command line flags. */
-auto extended_regexp( ) -> bool { return extended_regexp_; }
-auto restricted( ) -> bool { return restricted_; }
-auto scripted( ) -> bool { return scripted_; }
-auto strip_cr( ) -> bool { return strip_cr_; }
-auto traditional( ) -> bool { return traditional_; }
+  if( set ) { extended_regexp = new_val; }
+
+  return extended_regexp;
+}
+
+
+/* if set, run in restricted mode */
+auto restricted( bool set, bool new_val ) -> bool {
+  static bool restricted = false;
+
+  if( set ) { restricted = new_val; }
+
+  return restricted;
+}
+
+
+/* if set, suppress diagnostics, byte counts and '!' prompt */
+auto scripted( bool set, bool new_val ) -> bool {
+  static bool scripted = false;
+
+  if( set ) { scripted = new_val; }
+
+  return scripted;
+}
+
+
+/* if set, strip trailing CRs */
+auto strip_cr( bool set, bool new_val ) -> bool {
+  static bool strip_cr = false;
+
+  if( set ) { strip_cr = new_val; }
+
+  return strip_cr;
+}
+
+
+/* if set, be backwards compatible */
+auto traditional( bool set, bool new_val ) -> bool {
+  static bool traditional = false;
+
+  if( set ) { traditional = new_val; }
+
+  return traditional;
+}
 
 
 static void show_help( const char * invocation_name ) {
@@ -104,7 +139,7 @@ static void show_version( const char * program_name, const char * program_year )
 
 
 void show_strerror( const char * const filename, const int errcode ) {
-  if( !scripted_ ) {
+  if( !scripted() ) {
     if( (filename != nullptr) && (filename[0] != 0) ) {
       cerr << filename << ": ";
     }
@@ -136,7 +171,7 @@ auto is_regular_file( const int fd ) -> bool {
 
 
 auto may_access_filename( const char * const name ) -> bool {
-  if( restricted_ ) {
+  if( restricted() ) {
     if( name[0] == '!' )
       { set_error_msg( "Shell access restricted" ); return false; }
     if( strcmp( name, ".." ) == 0 || (strchr( name, '/' ) != nullptr) )
@@ -189,16 +224,16 @@ auto main( const int argc, const char * const argv[] ) -> int {
       }
       switch( code )
 	{
-	case 'E': extended_regexp_ = true; break;
-	case 'G': traditional_ = true; break;	/* backward compatibility */
+	case 'E': extended_regexp(true, true); break;
+	case 'G': traditional(true, true); break;	/* backward compatibility */
 	case 'h': show_help( invocation_name ); return 0;
 	case 'l': loose = true; break;
 	case 'p': if( set_prompt( arg ) ) { break; } else { return 1; }
-	case 'r': restricted_ = true; break;
-	case 's': scripted_ = true; break;
+	case 'r': restricted(true, true); break;
+	case 's': scripted(true, true); break;
 	case 'v': set_verbose(); break;
 	case 'V': show_version( program_name, program_year ); return 0;
-	case opt_cr: strip_cr_ = true; break;
+	case opt_cr: strip_cr(true, true); break;
 	default : show_error( "internal error: uncaught option.", 0, false, program_name, invocation_name );
 	  return 3;
 	}
@@ -210,7 +245,7 @@ auto main( const int argc, const char * const argv[] ) -> int {
   while( argind < ap_arguments( &parser ) )
     {
       const char * const arg = ap_argument( &parser, argind );
-      if( strcmp( arg, "-" ) == 0 ) { scripted_ = true; ++argind; continue; }
+      if( strcmp( arg, "-" ) == 0 ) { scripted(true, true); ++argind; continue; }
       if( may_access_filename( arg ) )
 	{
 	  const int ret = read_file( arg, 0 );

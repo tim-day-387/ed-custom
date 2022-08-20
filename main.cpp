@@ -35,11 +35,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <sys/stat.h>
 #include <clocale>
+#include <iostream>
+
+#include <sys/stat.h>
 
 #include "carg_parser.h"
 #include "ed.h"
+
+using namespace std;
 
 
 static const char * const program_name = "ed";
@@ -62,44 +66,44 @@ auto traditional( ) -> bool { return traditional_; }
 
 
 static void show_help( ) {
-  printf( "GNU ed is a line-oriented text editor. It is used to create, display,\n"
-          "modify and otherwise manipulate text files, both interactively and via\n"
-          "shell scripts. A restricted version of ed, red, can only edit files in\n"
-          "the current directory and cannot execute shell commands. Ed is the\n"
-          "'standard' text editor in the sense that it is the original editor for\n"
-          "Unix, and thus widely available. For most purposes, however, it is\n"
-          "superseded by full-screen editors such as GNU Emacs or GNU Moe.\n"
-          "\nUsage: %s [options] [file]\n", invocation_name );
-  printf( "\nOptions:\n"
-          "  -h, --help                 display this help and exit\n"
-          "  -V, --version              output version information and exit\n"
-          "  -E, --extended-regexp      use extended regular expressions\n"
-          "  -G, --traditional          run in compatibility mode\n"
-          "  -l, --loose-exit-status    exit with 0 status even if a command fails\n"
-          "  -p, --prompt=STRING        use STRING as an interactive prompt\n"
-          "  -r, --restricted           run in restricted mode\n"
-          "  -s, --quiet, --silent      suppress diagnostics, byte counts and '!' prompt\n"
-          "  -v, --verbose              be verbose; equivalent to the 'H' command\n"
-          "      --strip-trailing-cr    strip carriage returns at end of text lines\n"
-          "\nStart edit by reading in 'file' if given.\n"
-          "If 'file' begins with a '!', read output of shell command.\n"
-          "\nExit status: 0 for a normal exit, 1 for environmental problems (file\n"
-          "not found, invalid flags, I/O errors, etc), 2 to indicate a corrupt or\n"
-          "invalid input file, 3 for an internal consistency error (e.g., bug) which\n"
-          "caused ed to panic.\n"
-          "\nReport bugs to bug-ed@gnu.org\n"
-          "Ed home page: http://www.gnu.org/software/ed/ed.html\n"
-          "General help using GNU software: http://www.gnu.org/gethelp\n" );
+  cout << "GNU ed is a line-oriented text editor. It is used to create, display,\n"
+    "modify and otherwise manipulate text files, both interactively and via\n"
+    "shell scripts. A restricted version of ed, red, can only edit files in\n"
+    "the current directory and cannot execute shell commands. Ed is the\n"
+    "'standard' text editor in the sense that it is the original editor for\n"
+    "Unix, and thus widely available. For most purposes, however, it is\n"
+    "superseded by full-screen editors such as GNU Emacs or GNU Moe.\n"
+    "\nUsage: " << invocation_name << " [options] [file]\n";
+  cout << "\nOptions:\n"
+    "  -h, --help                 display this help and exit\n"
+    "  -V, --version              output version information and exit\n"
+    "  -E, --extended-regexp      use extended regular expressions\n"
+    "  -G, --traditional          run in compatibility mode\n"
+    "  -l, --loose-exit-status    exit with 0 status even if a command fails\n"
+    "  -p, --prompt=STRING        use STRING as an interactive prompt\n"
+    "  -r, --restricted           run in restricted mode\n"
+    "  -s, --quiet, --silent      suppress diagnostics, byte counts and '!' prompt\n"
+    "  -v, --verbose              be verbose; equivalent to the 'H' command\n"
+    "      --strip-trailing-cr    strip carriage returns at end of text lines\n"
+    "\nStart edit by reading in 'file' if given.\n"
+    "If 'file' begins with a '!', read output of shell command.\n"
+    "\nExit status: 0 for a normal exit, 1 for environmental problems (file\n"
+    "not found, invalid flags, I/O errors, etc), 2 to indicate a corrupt or\n"
+    "invalid input file, 3 for an internal consistency error (e.g., bug) which\n"
+    "caused ed to panic.\n"
+    "\nReport bugs to bug-ed@gnu.org\n"
+    "Ed home page: http://www.gnu.org/software/ed/ed.html\n"
+    "General help using GNU software: http://www.gnu.org/gethelp\n";
 }
 
 
 static void show_version( ) {
-  printf( "GNU %s %s\n", program_name, PROGVERSION );
-  printf( "Copyright (C) 1994 Andrew L. Moore.\n"
-          "Copyright (C) %s Antonio Diaz Diaz.\n", program_year );
-  printf( "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n"
-          "This is free software: you are free to change and redistribute it.\n"
-          "There is NO WARRANTY, to the extent permitted by law.\n" );
+  cout << "GNU " << program_name << " " << PROGVERSION << "\n";
+  cout << "Copyright (C) 1994 Andrew L. Moore.\n"
+    "Copyright (C) " << program_year << " Antonio Diaz Diaz.\n";
+  cout << "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n"
+    "This is free software: you are free to change and redistribute it.\n"
+    "There is NO WARRANTY, to the extent permitted by law.\n";
 }
 
 

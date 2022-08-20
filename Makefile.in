@@ -58,7 +58,7 @@ check : all
 lint : lint-main
 
 lint-main : main.cpp
-	clang-tidy --checks='modernize*, readability*' main.cpp
+	clang-tidy --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main.cpp
 
 # Clean
 clean :

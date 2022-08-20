@@ -17,6 +17,7 @@ objs = buffer.o carg_parser.o global.o io.o main.o main_loop.o regex.o signal.o
          uninstall uninstall-bin uninstall-info uninstall-man \
          doc info man check dist clean distclean
 
+# Software
 all : $(progname) r$(progname)
 
 $(progname) : $(objs)
@@ -36,6 +37,7 @@ $(objs)       : Makefile ed.h
 carg_parser.o : carg_parser.h
 main.o        : carg_parser.h
 
+# Documentation
 doc : info man
 
 info : $(VPATH)/doc/$(pkgname).info
@@ -48,9 +50,17 @@ man : $(VPATH)/doc/$(progname).1
 $(VPATH)/doc/$(progname).1 : $(progname)
 	help2man -n 'line-oriented text editor' -o $@ ./$(progname)
 
+# Testing
 check : all
 	@$(VPATH)/testsuite/check.sh $(VPATH)/testsuite $(pkgversion)
 
+# Linting
+lint : lint-main
+
+lint-main : main.cpp
+	clang-tidy --checks='modernize*, readability*' main.cpp
+
+# Clean
 clean :
 	-rm -f $(progname) r$(progname) $(objs)
 

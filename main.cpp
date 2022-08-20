@@ -32,11 +32,11 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/stat.h>
-#include <locale.h>
+#include <clocale>
 
 #include "carg_parser.h"
 #include "ed.h"
@@ -54,15 +54,14 @@ static bool strip_cr_ = false;		/* if set, strip trailing CRs */
 static bool traditional_ = false;	/* if set, be backwards compatible */
 
 /* Access functions for command line flags. */
-bool extended_regexp( void ) { return extended_regexp_; }
-bool restricted( void ) { return restricted_; }
-bool scripted( void ) { return scripted_; }
-bool strip_cr( void ) { return strip_cr_; }
-bool traditional( void ) { return traditional_; }
+auto extended_regexp( ) -> bool { return extended_regexp_; }
+auto restricted( ) -> bool { return restricted_; }
+auto scripted( ) -> bool { return scripted_; }
+auto strip_cr( ) -> bool { return strip_cr_; }
+auto traditional( ) -> bool { return traditional_; }
 
 
-static void show_help( void )
-  {
+static void show_help( ) {
   printf( "GNU ed is a line-oriented text editor. It is used to create, display,\n"
           "modify and otherwise manipulate text files, both interactively and via\n"
           "shell scripts. A restricted version of ed, red, can only edit files in\n"
@@ -91,137 +90,137 @@ static void show_help( void )
           "\nReport bugs to bug-ed@gnu.org\n"
           "Ed home page: http://www.gnu.org/software/ed/ed.html\n"
           "General help using GNU software: http://www.gnu.org/gethelp\n" );
-  }
+}
 
 
-static void show_version( void )
-  {
+static void show_version( ) {
   printf( "GNU %s %s\n", program_name, PROGVERSION );
   printf( "Copyright (C) 1994 Andrew L. Moore.\n"
           "Copyright (C) %s Antonio Diaz Diaz.\n", program_year );
   printf( "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n"
           "This is free software: you are free to change and redistribute it.\n"
           "There is NO WARRANTY, to the extent permitted by law.\n" );
-  }
+}
 
 
-void show_strerror( const char * const filename, const int errcode )
-  {
-  if( !scripted_ )
-    {
-    if( filename && filename[0] ) fprintf( stderr, "%s: ", filename );
-    fprintf( stderr, "%s\n", strerror( errcode ) );
+void show_strerror( const char * const filename, const int errcode ) {
+  if( !scripted_ ) {
+    if( (filename != nullptr) && (filename[0] != 0) ) {
+      fprintf( stderr, "%s: ", filename );
     }
+    fprintf( stderr, "%s\n", strerror( errcode ) );
   }
+}
 
 
-static void show_error( const char * const msg, const int errcode, const bool help )
-  {
-  if( msg && msg[0] )
+static void show_error( const char * const msg, const int errcode, const bool help ) {
+  if( (msg != nullptr) && (msg[0] != 0) ) {
     fprintf( stderr, "%s: %s%s%s\n", program_name, msg,
              ( errcode > 0 ) ? ": " : "",
              ( errcode > 0 ) ? strerror( errcode ) : "" );
-  if( help )
+  }
+  if( help ) {
     fprintf( stderr, "Try '%s --help' for more information.\n",
              invocation_name );
   }
+}
 
 
 /* return true if file descriptor is a regular file */
-bool is_regular_file( const int fd )
-  {
+auto is_regular_file( const int fd ) -> bool {
   struct stat st;
   return ( fstat( fd, &st ) != 0 || S_ISREG( st.st_mode ) );
-  }
+}
 
 
-bool may_access_filename( const char * const name )
-  {
-  if( restricted_ )
-    {
+auto may_access_filename( const char * const name ) -> bool {
+  if( restricted_ ) {
     if( name[0] == '!' )
       { set_error_msg( "Shell access restricted" ); return false; }
-    if( strcmp( name, ".." ) == 0 || strchr( name, '/' ) )
+    if( strcmp( name, ".." ) == 0 || (strchr( name, '/' ) != nullptr) )
       { set_error_msg( "Directory access restricted" ); return false; }
-    }
-  return true;
   }
+  return true;
+}
 
 
-int main( const int argc, const char * const argv[] )
-  {
+auto main( const int argc, const char * const argv[] ) -> int {
   int argind;
   bool initial_error = false;		/* fatal error reading file */
   bool loose = false;
   enum { opt_cr = 256 };
   const struct ap_Option options[] =
     {
-    { 'E', "extended-regexp",      ap_no  },
-    { 'G', "traditional",          ap_no  },
-    { 'h', "help",                 ap_no  },
-    { 'l', "loose-exit-status",    ap_no  },
-    { 'p', "prompt",               ap_yes },
-    { 'r', "restricted",           ap_no  },
-    { 's', "quiet",                ap_no  },
-    { 's', "silent",               ap_no  },
-    { 'v', "verbose",              ap_no  },
-    { 'V', "version",              ap_no  },
-    { opt_cr, "strip-trailing-cr", ap_no  },
-    {  0, 0,                       ap_no } };
+      { 'E', "extended-regexp",      ap_no  },
+      { 'G', "traditional",          ap_no  },
+      { 'h', "help",                 ap_no  },
+      { 'l', "loose-exit-status",    ap_no  },
+      { 'p', "prompt",               ap_yes },
+      { 'r', "restricted",           ap_no  },
+      { 's', "quiet",                ap_no  },
+      { 's', "silent",               ap_no  },
+      { 'v', "verbose",              ap_no  },
+      { 'V', "version",              ap_no  },
+      { opt_cr, "strip-trailing-cr", ap_no  },
+      {  0, nullptr,                       ap_no } };
 
   struct Arg_parser parser;
-  if( argc > 0 ) invocation_name = argv[0];
+  if( argc > 0 ) {
+    invocation_name = argv[0];
+  }
 
-  if( !ap_init( &parser, argc, argv, options, 0 ) )
+  if( ap_init( &parser, argc, argv, options, 0 ) == 0 )
     { show_error( "Memory exhausted.", 0, false ); return 1; }
-  if( ap_error( &parser ) )				/* bad option */
+  if( ap_error( &parser ) != nullptr )				/* bad option */
     { show_error( ap_error( &parser ), 0, true ); return 1; }
 
   for( argind = 0; argind < ap_arguments( &parser ); ++argind )
     {
-    const int code = ap_code( &parser, argind );
-    const char * const arg = ap_argument( &parser, argind );
-    if( !code ) break;					/* no more options */
-    switch( code )
-      {
-      case 'E': extended_regexp_ = true; break;
-      case 'G': traditional_ = true; break;	/* backward compatibility */
-      case 'h': show_help(); return 0;
-      case 'l': loose = true; break;
-      case 'p': if( set_prompt( arg ) ) break; else return 1;
-      case 'r': restricted_ = true; break;
-      case 's': scripted_ = true; break;
-      case 'v': set_verbose(); break;
-      case 'V': show_version(); return 0;
-      case opt_cr: strip_cr_ = true; break;
-      default : show_error( "internal error: uncaught option.", 0, false );
-                return 3;
+      const int code = ap_code( &parser, argind );
+      const char * const arg = ap_argument( &parser, argind );
+      if( code == 0 ) {
+	break;					/* no more options */
       }
+      switch( code )
+	{
+	case 'E': extended_regexp_ = true; break;
+	case 'G': traditional_ = true; break;	/* backward compatibility */
+	case 'h': show_help(); return 0;
+	case 'l': loose = true; break;
+	case 'p': if( set_prompt( arg ) ) { break; } else { return 1; }
+	case 'r': restricted_ = true; break;
+	case 's': scripted_ = true; break;
+	case 'v': set_verbose(); break;
+	case 'V': show_version(); return 0;
+	case opt_cr: strip_cr_ = true; break;
+	default : show_error( "internal error: uncaught option.", 0, false );
+	  return 3;
+	}
     } /* end process options */
 
   setlocale( LC_ALL, "" );
-  if( !init_buffers() ) return 1;
+  if( !init_buffers() ) { return 1; }
 
   while( argind < ap_arguments( &parser ) )
     {
-    const char * const arg = ap_argument( &parser, argind );
-    if( strcmp( arg, "-" ) == 0 ) { scripted_ = true; ++argind; continue; }
-    if( may_access_filename( arg ) )
-      {
-      const int ret = read_file( arg, 0 );
-      if( ret < 0 && is_regular_file( 0 ) ) return 2;
-      if( arg[0] != '!' && !set_def_filename( arg ) ) return 1;
-      if( ret == -2 ) initial_error = true;
-      }
-    else
-      {
-      if( is_regular_file( 0 ) ) return 2;
-      initial_error = true;
-      }
-    break;
+      const char * const arg = ap_argument( &parser, argind );
+      if( strcmp( arg, "-" ) == 0 ) { scripted_ = true; ++argind; continue; }
+      if( may_access_filename( arg ) )
+	{
+	  const int ret = read_file( arg, 0 );
+	  if( ret < 0 && is_regular_file( 0 ) ) { return 2; }
+	  if( arg[0] != '!' && !set_def_filename( arg ) ) { return 1; }
+	  if( ret == -2 ) { initial_error = true; }
+	}
+      else
+	{
+	  if( is_regular_file( 0 ) ) { return 2; }
+	  initial_error = true;
+	}
+      break;
     }
   ap_free( &parser );
 
-  if( initial_error ) fputs( "?\n", stdout );
+  if( initial_error ) { fputs( "?\n", stdout ); }
   return main_loop( initial_error, loose );
-  }
+}

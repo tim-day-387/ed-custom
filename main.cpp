@@ -46,10 +46,6 @@
 using namespace std;
 
 
-static const char * const program_name = "ed";
-static const char * const program_year = "2022";
-static const char * invocation_name = "ed";		/* default value */
-
 static bool extended_regexp_ = false;	/* if set, use EREs */
 static bool restricted_ = false;	/* if set, run in restricted mode */
 static bool scripted_ = false;		/* if set, suppress diagnostics,
@@ -65,7 +61,7 @@ auto strip_cr( ) -> bool { return strip_cr_; }
 auto traditional( ) -> bool { return traditional_; }
 
 
-static void show_help( ) {
+static void show_help( const char * invocation_name ) {
   cout << "GNU ed is a line-oriented text editor. It is used to create, display,\n"
     "modify and otherwise manipulate text files, both interactively and via\n"
     "shell scripts. A restricted version of ed, red, can only edit files in\n"
@@ -97,7 +93,7 @@ static void show_help( ) {
 }
 
 
-static void show_version( ) {
+static void show_version( const char * program_name, const char * program_year ) {
   cout << "GNU " << program_name << " " << PROGVERSION << "\n";
   cout << "Copyright (C) 1994 Andrew L. Moore.\n"
     "Copyright (C) " << program_year << " Antonio Diaz Diaz.\n";
@@ -117,7 +113,9 @@ void show_strerror( const char * const filename, const int errcode ) {
 }
 
 
-static void show_error( const char * const msg, const int errcode, const bool help ) {
+static void show_error( const char * const msg, const int errcode,
+			const bool help, const char * program_name,
+			const char * invocation_name ) {
   if( (msg != nullptr) && (msg[0] != 0) ) {
     cerr << program_name << ": " << msg
 	 << ( ( errcode > 0 ) ? ": " : "" )
@@ -149,6 +147,10 @@ auto may_access_filename( const char * const name ) -> bool {
 
 
 auto main( const int argc, const char * const argv[] ) -> int {
+  const char * const program_name = "ed";
+  const char * const program_year = "2022";
+  const char * invocation_name = "ed";		/* default value */
+
   int argind;
   bool initial_error = false;		/* fatal error reading file */
   bool loose = false;
@@ -174,9 +176,9 @@ auto main( const int argc, const char * const argv[] ) -> int {
   }
 
   if( ap_init( &parser, argc, argv, options, 0 ) == 0 )
-    { show_error( "Memory exhausted.", 0, false ); return 1; }
+    { show_error( "Memory exhausted.", 0, false, program_name, invocation_name ); return 1; }
   if( ap_error( &parser ) != nullptr )				/* bad option */
-    { show_error( ap_error( &parser ), 0, true ); return 1; }
+    { show_error( ap_error( &parser ), 0, true, program_name, invocation_name ); return 1; }
 
   for( argind = 0; argind < ap_arguments( &parser ); ++argind )
     {
@@ -189,15 +191,15 @@ auto main( const int argc, const char * const argv[] ) -> int {
 	{
 	case 'E': extended_regexp_ = true; break;
 	case 'G': traditional_ = true; break;	/* backward compatibility */
-	case 'h': show_help(); return 0;
+	case 'h': show_help( invocation_name ); return 0;
 	case 'l': loose = true; break;
 	case 'p': if( set_prompt( arg ) ) { break; } else { return 1; }
 	case 'r': restricted_ = true; break;
 	case 's': scripted_ = true; break;
 	case 'v': set_verbose(); break;
-	case 'V': show_version(); return 0;
+	case 'V': show_version( program_name, program_year ); return 0;
 	case opt_cr: strip_cr_ = true; break;
-	default : show_error( "internal error: uncaught option.", 0, false );
+	default : show_error( "internal error: uncaught option.", 0, false, program_name, invocation_name );
 	  return 3;
 	}
     } /* end process options */

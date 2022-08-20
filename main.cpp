@@ -110,22 +110,22 @@ static void show_version( ) {
 void show_strerror( const char * const filename, const int errcode ) {
   if( !scripted_ ) {
     if( (filename != nullptr) && (filename[0] != 0) ) {
-      fprintf( stderr, "%s: ", filename );
+      cerr << filename << ": ";
     }
-    fprintf( stderr, "%s\n", strerror( errcode ) );
+    cerr << strerror( errcode ) << "\n";
   }
 }
 
 
 static void show_error( const char * const msg, const int errcode, const bool help ) {
   if( (msg != nullptr) && (msg[0] != 0) ) {
-    fprintf( stderr, "%s: %s%s%s\n", program_name, msg,
-             ( errcode > 0 ) ? ": " : "",
-             ( errcode > 0 ) ? strerror( errcode ) : "" );
+    cerr << program_name << ": " << msg
+	 << ( ( errcode > 0 ) ? ": " : "" )
+	 << ( ( errcode > 0 ) ? strerror( errcode ) : "" )
+	 << "\n";
   }
   if( help ) {
-    fprintf( stderr, "Try '%s --help' for more information.\n",
-             invocation_name );
+    cerr << "Try '" << invocation_name << " --help' for more information.\n";
   }
 }
 

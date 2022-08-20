@@ -26,7 +26,7 @@ r$(progname) : r$(progname).in
 	cat $(VPATH)/r$(progname).in > $@
 	chmod a+x $@
 
-main.o : main.c
+main.o : main.cpp
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DPROGVERSION=\"$(pkgversion)\" -c -o $@ $<
 
 %.o : %.c

@@ -27,6 +27,9 @@ main.o : main.cpp
 %.o : %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
+%.o : %.cpp
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
 $(objs)       : Makefile ed.h
 carg_parser.o : carg_parser.h
 main.o        : carg_parser.h
@@ -49,10 +52,13 @@ check : all
 	@$(VPATH)/testsuite/check.sh $(VPATH)/testsuite $(pkgversion)
 
 # Linting
-lint : lint-main
+lint : lint-main lint-main-loop
 
 lint-main : main.cpp
 	clang-tidy --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main.cpp
+
+lint-main-loop : main_loop.cpp
+	clang-tidy --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main_loop.cpp
 
 # Clean
 clean :

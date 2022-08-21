@@ -11,12 +11,6 @@ CAN_RUN_INSTALLINFO = $(SHELL) -c "install-info --version" > /dev/null 2>&1
 objs = buffer.o carg_parser.o global.o io.o main.o main_loop.o regex.o signal.o
 
 
-.PHONY : all install install-bin install-info install-man-base install-man \
-         install-strip install-compress install-strip-compress \
-         install-bin-strip install-info-compress install-man-compress \
-         uninstall uninstall-bin uninstall-info uninstall-man \
-         doc info man check dist clean distclean
-
 # Software
 all : $(progname) r$(progname)
 

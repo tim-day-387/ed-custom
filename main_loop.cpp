@@ -46,7 +46,7 @@ void invalid_address( void ) {
 }
 
 bool set_def_filename( const char * const s ) {
-  static char * buf = 0;		/* filename buffer */
+  static char * buf = nullptr;		/* filename buffer */
   static int bufsz = 0;			/* filename buffer size */
   const int len = strlen( s );
   if( !resize_buffer( &buf, &bufsz, len + 1 ) ) {
@@ -63,7 +63,7 @@ void set_error_msg( const char * const msg ) {
 }
 
 bool set_prompt( const char * const s ) {
-  static char * buf = 0;		/* prompt buffer */
+  static char * buf = nullptr;		/* prompt buffer */
   static int bufsz = 0;			/* prompt buffer size */
   const int len = strlen( s );
   if( !resize_buffer( &buf, &bufsz, len + 1 ) ) {
@@ -99,7 +99,8 @@ void unmark_line_node( const line_t * const lp ) {
   int i;
   for( i = 0; markno && i < 26; ++i ) {
     if( mark[i] == lp ) {
-      mark[i] = 0; --markno;
+      mark[i] = nullptr;
+      --markno;
     }
   }
 }
@@ -118,9 +119,9 @@ static int get_marked_node_addr( int c ) {
 
 /* return pointer to copy of shell command in the command buffer */
 static const char * get_shell_command( const char ** const ibufpp ) {
-  static char * buf = 0;		/* temporary buffer */
+  static char * buf = nullptr;		/* temporary buffer */
   static int bufsz = 0;
-  static char * shcmd = 0;		/* shell command buffer */
+  static char * shcmd = nullptr;		/* shell command buffer */
   static int shcmdsz = 0;		/* shell command buffer size */
   static int shcmdlen = 0;		/* shell command length */
   int i = 0, len = 0;
@@ -128,20 +129,20 @@ static const char * get_shell_command( const char ** const ibufpp ) {
 
   if( restricted() ) {
     set_error_msg( "Shell access restricted" );
-    return 0;
+    return nullptr;
   }
   if( !get_extended_line( ibufpp, &len, true ) ) {
-    return 0;
+    return nullptr;
   }
   if( !resize_buffer( &buf, &bufsz, len + 1 ) ) {
-    return 0;
+    return nullptr;
   }
   if( **ibufpp != '!' ) {
     buf[i++] = '!';		        /* prefix command w/ bang */
   } else {				/* replace '!' with the previous command */
     if( shcmdlen <= 0 || ( traditional() && !shcmd[1] ) ) {
       set_error_msg( no_prev_com );
-      return 0;
+      return nullptr;
     }
     memcpy( buf, shcmd, shcmdlen );		/* bufsz >= shcmdlen */
     i += shcmdlen; ++*ibufpp; replacement = true;
@@ -151,22 +152,22 @@ static const char * get_shell_command( const char ** const ibufpp ) {
       const char * p;
       if( !def_filename[0] ) {
 	set_error_msg( no_cur_fn );
-	return 0;
+	return nullptr;
       }
       p = strip_escapes( def_filename );
       if( !p ) {
-	return 0;
+	return nullptr;
       }
       len = strlen( p );
       if( !resize_buffer( &buf, &bufsz, i + len ) ) {
-	return 0;
+	return nullptr;
       }
       memcpy( buf + i, p, len );
       i += len; ++*ibufpp; replacement = true;
     } else {		/* copy char or escape sequence unescaping any '%' */
       char ch = *(*ibufpp)++;
       if( !resize_buffer( &buf, &bufsz, i + 2 ) ) {
-	return 0;
+	return nullptr;
       }
       if( ch != '\\' ) {
 	buf[i++] = ch; 	/* normal char */
@@ -183,7 +184,7 @@ static const char * get_shell_command( const char ** const ibufpp ) {
     ++*ibufpp;			/* skip newline */
   }
   if( !resize_buffer( &shcmd, &shcmdsz, i + 1 ) ) {
-    return 0;
+    return nullptr;
   }
   memcpy( shcmd, buf, i );
   shcmd[i] = 0; shcmdlen = i;
@@ -206,30 +207,30 @@ static const char * skip_blanks( const char * p ) {
 /* return pointer to copy of filename in the command buffer */
 static const char * get_filename( const char ** const ibufpp,
                                   const bool traditional_f_command ) {
-  static char * buf = 0;
+  static char * buf = nullptr;
   static int bufsz = 0;
-  const int pmax = path_max( 0 );
+  const int pmax = path_max( nullptr );
   int n;
 
   *ibufpp = skip_blanks( *ibufpp );
   if( **ibufpp != '\n' ) {
     int size = 0;
     if( !get_extended_line( ibufpp, &size, true ) ) {
-      return 0;
+      return nullptr;
     }
     if( **ibufpp == '!' ) {
       ++*ibufpp;
       return get_shell_command( ibufpp );
     } else if( size > pmax ) {
       set_error_msg( "Filename too long" );
-      return 0;
+      return nullptr;
     }
   } else if( !traditional_f_command && !def_filename[0] ) {
     set_error_msg( no_cur_fn );
-    return 0;
+    return nullptr;
   }
   if( !resize_buffer( &buf, &bufsz, pmax + 1 ) ) {
-    return 0;
+    return nullptr;
   }
   for( n = 0; **ibufpp != '\n'; ++n, ++*ibufpp ) {
     buf[n] = **ibufpp;
@@ -238,7 +239,7 @@ static const char * get_filename( const char ** const ibufpp,
   while( **ibufpp == '\n' ) {
     ++*ibufpp;			/* skip newline */
   }
-  return ( may_access_filename( buf ) ? buf : 0 );
+  return ( may_access_filename( buf ) ? buf : nullptr );
 }
 
 
@@ -1075,15 +1076,15 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
    Stop at first error. Return status of last command executed. */
 static int exec_global( const char ** const ibufpp, const int pflags,
                         const bool interactive ) {
-  static char * buf = 0;
+  static char * buf = nullptr;
   static int bufsz = 0;
-  const char * cmd = 0;
+  const char * cmd = nullptr;
 
   if( !interactive ) {
     if( traditional() && strcmp( *ibufpp, "\n" ) == 0 ) {
       cmd = "p\n";			/* null cmd_list == 'p' */
     } else {
-      if( !get_extended_line( ibufpp, 0, false ) ) {
+      if( !get_extended_line( ibufpp, nullptr, false ) ) {
 	return ERR;
       }
       cmd = *ibufpp;

@@ -16,13 +16,13 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <setjmp.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <cerrno>
+#include <climits>
+#include <csetjmp>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "ed.h"
 

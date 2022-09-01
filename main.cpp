@@ -37,6 +37,7 @@
 #include <cstring>
 #include <clocale>
 #include <iostream>
+#include <span>
 
 #include <sys/stat.h>
 
@@ -139,8 +140,10 @@ static void show_version( const char * program_name, const char * program_year )
 
 
 void show_strerror( const char * const filename, const int errcode ) {
+  auto filename_arr = span(filename, size_t(filename));
+
   if( !scripted() ) {
-    if( (filename != nullptr) && (filename[0] != 0) ) {
+    if( (filename != nullptr) && (filename_arr[0] != 0) ) {
       cerr << filename << ": ";
     }
     cerr << strerror( errcode ) << "\n";
@@ -151,7 +154,9 @@ void show_strerror( const char * const filename, const int errcode ) {
 static void show_error( const char * const msg, const int errcode,
 			const bool help, const char * program_name,
 			const char * invocation_name ) {
-  if( (msg != nullptr) && (msg[0] != 0) ) {
+  auto msg_arr = span(msg, size_t(msg));
+
+  if( (msg != nullptr) && (msg_arr[0] != 0) ) {
     cerr << program_name << ": " << msg
 	 << ( ( errcode > 0 ) ? ": " : "" )
 	 << ( ( errcode > 0 ) ? strerror( errcode ) : "" )
@@ -165,14 +170,16 @@ static void show_error( const char * const msg, const int errcode,
 
 /* return true if file descriptor is a regular file */
 auto is_regular_file( const int fd ) -> bool {
-  struct stat st;
+  struct stat st {};
   return ( fstat( fd, &st ) != 0 || S_ISREG( st.st_mode ) );
 }
 
 
 auto may_access_filename( const char * const name ) -> bool {
+  auto name_arr = span(name, size_t(name));
+
   if( restricted() ) {
-    if( name[0] == '!' )
+    if( name_arr[0] == '!' )
       { set_error_msg( "Shell access restricted" ); return false; }
     if( strcmp( name, ".." ) == 0 || (strchr( name, '/' ) != nullptr) )
       { set_error_msg( "Directory access restricted" ); return false; }
@@ -186,7 +193,9 @@ auto main( const int argc, const char * const argv[] ) -> int {
   const char * const program_year = "2022";
   const char * invocation_name = "ed";		/* default value */
 
-  int argind;
+  auto argv_arr = span(argv, size_t(argv));
+
+  int argind = 0;
   bool initial_error = false;		/* fatal error reading file */
   bool loose = false;
   enum { opt_cr = 256 };
@@ -205,9 +214,9 @@ auto main( const int argc, const char * const argv[] ) -> int {
       { opt_cr, "strip-trailing-cr", ap_no  },
       {  0, nullptr,                       ap_no } };
 
-  struct Arg_parser parser;
+  struct Arg_parser parser {};
   if( argc > 0 ) {
-    invocation_name = argv[0];
+    invocation_name = argv_arr[0];
   }
 
   if( ap_init( &parser, argc, argv, options, 0 ) == 0 )
@@ -219,6 +228,7 @@ auto main( const int argc, const char * const argv[] ) -> int {
     {
       const int code = ap_code( &parser, argind );
       const char * const arg = ap_argument( &parser, argind );
+      auto arg_arr = span(arg, size_t(arg));
       if( code == 0 ) {
 	break;					/* no more options */
       }
@@ -245,12 +255,13 @@ auto main( const int argc, const char * const argv[] ) -> int {
   while( argind < ap_arguments( &parser ) )
     {
       const char * const arg = ap_argument( &parser, argind );
+      auto arg_arr = span(arg, size_t(arg));
       if( strcmp( arg, "-" ) == 0 ) { scripted(true, true); ++argind; continue; }
       if( may_access_filename( arg ) )
 	{
 	  const int ret = read_file( arg, 0 );
 	  if( ret < 0 && is_regular_file( 0 ) ) { return 2; }
-	  if( arg[0] != '!' && !set_def_filename( arg ) ) { return 1; }
+	  if( arg_arr[0] != '!' && !set_def_filename( arg ) ) { return 1; }
 	  if( ret == -2 ) { initial_error = true; }
 	}
       else

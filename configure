@@ -23,7 +23,7 @@ mandir='$(datarootdir)/man'
 program_prefix=
 CC=g++
 CPPFLAGS=
-CFLAGS='-Wall -W -O2'
+CFLAGS='-std=c++20 -Wall -W -O2'
 LDFLAGS=
 
 # checking whether we are using GNU C.

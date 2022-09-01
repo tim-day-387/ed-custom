@@ -55,10 +55,10 @@ check : all
 lint : lint-main lint-main-loop
 
 lint-main : main.cpp
-	clang-tidy --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main.cpp
+	clang-tidy -extra-arg=-std=c++20 --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main.cpp
 
 lint-main-loop : main_loop.cpp
-	clang-tidy --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main_loop.cpp
+	clang-tidy -extra-arg=-std=c++20 --checks='modernize*, readability*, cppcoreguidelines*, bugprone*' main_loop.cpp
 
 # Clean
 clean :

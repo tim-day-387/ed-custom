@@ -220,10 +220,13 @@ static const char * get_filename( const char ** const ibufpp,
     if( !get_extended_line( ibufpp, &size, true ) ) {
       return nullptr;
     }
+
     if( **ibufpp == '!' ) {
       ++*ibufpp;
       return get_shell_command( ibufpp );
-    } else if( size > pmax ) {
+    }
+
+    if( size > pmax ) {
       set_error_msg( "Filename too long" );
       return nullptr;
     }
@@ -458,21 +461,18 @@ static bool get_command_suffix( const char ** const ibufpp,
     if( ch == 'l' ) {
       if( ( *pflagsp & pf_l ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_l;
       }
+      *pflagsp |= pf_l;
     } else if( ch == 'n' ) {
       if( ( *pflagsp & pf_n ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_n;
       }
+      *pflagsp |= pf_n;
     } else if( ch == 'p' ) {
       if( ( *pflagsp & pf_p ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_p;
       }
+      *pflagsp |= pf_p;
     } else {
       break;
     }
@@ -502,37 +502,34 @@ static bool get_command_s_suffix( const char ** const ibufpp,
       }
       rep = true; *snump = n;
       continue;
-    } else if( ch == 'g' ) {
+    }
+
+    if( ch == 'g' ) {
       if( rep ) {
 	break;
-      } else {
-	rep = true;
-	*snump = 0;
       }
+      rep = true;
+      *snump = 0;
     } else if( ch == 'i' || ch == 'I' ) {
       if( *ignore_casep ) {
 	break;
-      } else {
-	*ignore_casep = true;
       }
+      *ignore_casep = true;
     } else if( ch == 'l' ) {
       if( ( *pflagsp & pf_l ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_l;
       }
+      *pflagsp |= pf_l;
     } else if( ch == 'n' ) {
       if( ( *pflagsp & pf_n ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_n;
       }
+      *pflagsp |= pf_n;
     } else if( ch == 'p' ) {
       if( ( *pflagsp & pf_p ) != 0 ) {
 	break;
-      } else {
-	*pflagsp |= pf_p;
       }
+      *pflagsp |= pf_p;
     } else {
       break;
     }

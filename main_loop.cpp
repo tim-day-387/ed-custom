@@ -89,7 +89,9 @@ static bool mark_line_node( const line_t * const lp, int c ) {
     set_error_msg( inv_mark_ch );
     return false;
   }
-  if( !mark[c] ) ++markno;
+  if( mark[c] == nullptr ) {
+    ++markno;
+  }
   mark[c] = lp;
   return true;
 }
@@ -97,7 +99,7 @@ static bool mark_line_node( const line_t * const lp, int c ) {
 
 void unmark_line_node( const line_t * const lp ) {
   int i;
-  for( i = 0; markno && i < 26; ++i ) {
+  for( i = 0; markno != 0 && i < 26; ++i ) {
     if( mark[i] == lp ) {
       mark[i] = nullptr;
       --markno;
@@ -140,7 +142,7 @@ static const char * get_shell_command( const char ** const ibufpp ) {
   if( **ibufpp != '!' ) {
     buf[i++] = '!';		        /* prefix command w/ bang */
   } else {				/* replace '!' with the previous command */
-    if( shcmdlen <= 0 || ( traditional() && !shcmd[1] ) ) {
+    if( shcmdlen <= 0 || ( traditional() && shcmd[1] == 0 ) ) {
       set_error_msg( no_prev_com );
       return nullptr;
     }
@@ -150,12 +152,12 @@ static const char * get_shell_command( const char ** const ibufpp ) {
   while( **ibufpp != '\n' ) {
     if( **ibufpp == '%' ) {	/* replace '%' with the default filename */
       const char * p;
-      if( !def_filename[0] ) {
+      if( def_filename[0] == 0 ) {
 	set_error_msg( no_cur_fn );
 	return nullptr;
       }
       p = strip_escapes( def_filename );
-      if( !p ) {
+      if( p == nullptr ) {
 	return nullptr;
       }
       len = strlen( p );
@@ -197,7 +199,7 @@ static const char * get_shell_command( const char ** const ibufpp ) {
 
 
 static const char * skip_blanks( const char * p ) {
-  while( isspace( (unsigned char)*p ) && *p != '\n' ) {
+  while( isspace( (unsigned char)*p ) != 0 && *p != '\n' ) {
     ++p;
   }
   return p;
@@ -225,7 +227,7 @@ static const char * get_filename( const char ** const ibufpp,
       set_error_msg( "Filename too long" );
       return nullptr;
     }
-  } else if( !traditional_f_command && !def_filename[0] ) {
+  } else if( !traditional_f_command && def_filename[0] == 0 ) {
     set_error_msg( no_cur_fn );
     return nullptr;
   }
@@ -251,7 +253,7 @@ static bool parse_int( int * const i, const char * const str,
 
   errno = 0;
   *i = li = strtol( str, &tmp, 10 );
-  if( tail ) {
+  if( tail != nullptr ) {
     *tail = tmp;
   }
   if( tmp == str ) {
@@ -282,7 +284,7 @@ static int extract_addresses( const char ** const ibufpp ) {
   while( true ) {
     int n;
     const unsigned char ch = **ibufpp;
-    if( isdigit( ch ) ) {
+    if( isdigit( ch ) != 0 ) {
       if( !parse_int( &n, *ibufpp, ibufpp ) ) {
 	return -1;
       }
@@ -304,7 +306,7 @@ static int extract_addresses( const char ** const ibufpp ) {
 	  first = false;
 	  second_addr = current_addr();
 	}
-	if( isdigit( (unsigned char)(*ibufpp)[1] ) ) {
+	if( isdigit( (unsigned char)(*ibufpp)[1] ) != 0 ) {
 	  if( !parse_int( &n, *ibufpp, ibufpp ) ) {
 	    return -1;
 	  }
@@ -454,19 +456,19 @@ static bool get_command_suffix( const char ** const ibufpp,
   while( true ) {
     const unsigned char ch = **ibufpp;
     if( ch == 'l' ) {
-      if( *pflagsp & pf_l ) {
+      if( ( *pflagsp & pf_l ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_l;
       }
     } else if( ch == 'n' ) {
-      if( *pflagsp & pf_n ) {
+      if( ( *pflagsp & pf_n ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_n;
       }
     } else if( ch == 'p' ) {
-      if( *pflagsp & pf_p ) {
+      if( ( *pflagsp & pf_p ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_p;
@@ -514,19 +516,19 @@ static bool get_command_s_suffix( const char ** const ibufpp,
 	*ignore_casep = true;
       }
     } else if( ch == 'l' ) {
-      if( *pflagsp & pf_l ) {
+      if( ( *pflagsp & pf_l ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_l;
       }
     } else if( ch == 'n' ) {
-      if( *pflagsp & pf_n ) {
+      if( ( *pflagsp & pf_n ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_n;
       }
     } else if( ch == 'p' ) {
-      if( *pflagsp & pf_p ) {
+      if( ( *pflagsp & pf_p ) != 0 ) {
 	break;
       } else {
 	*pflagsp |= pf_p;
@@ -553,7 +555,7 @@ static bool unexpected_address( const int addr_cnt ) {
 }
 
 static bool unexpected_command_suffix( const unsigned char ch ) {
-  if( !isspace( ch ) ) {
+  if( isspace( ch ) == 0 ) {
     set_error_msg( "Unexpected command suffix" );
     return true;
   }
@@ -580,7 +582,7 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
     bool error = false;
     if( **ibufpp >= '1' && **ibufpp <= '9' ) {
       int n = 0;
-      if( ( sflags & sf_g ) || !parse_int( &n, *ibufpp, ibufpp ) || n <= 0 ) {
+      if( ( sflags & sf_g ) != 0 || !parse_int( &n, *ibufpp, ibufpp ) || n <= 0 ) {
         error = true;
       } else {
 	sflags = (Sflags) (sflags | sf_g);
@@ -592,15 +594,15 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
 	sflags = (Sflags) (sflags | sf_none);
 	break;
       case 'g':
-	if( sflags & sf_g ) {
+	if( ( sflags & sf_g ) != 0 ) {
 	  error = true;
 	} else {
 	  sflags = (Sflags) (sflags | sf_g);
-	  snum = !snum; ++*ibufpp;
+	  snum = static_cast<int> ( snum == 0 ); ++*ibufpp;
 	}
         break;
       case 'p':
-	if( sflags & sf_p ) {
+	if( ( sflags & sf_p ) != 0 ) {
 	  error = true;
 	} else {
 	  sflags = (Sflags) (sflags | sf_p);
@@ -608,7 +610,7 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
 	}
 	break;
       case 'r':
-	if( sflags & sf_r ) {
+	if( ( sflags & sf_r ) != 0 ) {
 	  error = true;
 	} else {
 	  sflags = (Sflags) (sflags | sf_r);
@@ -616,7 +618,7 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
 	}
 	break;
       default :
-	if( sflags ) {
+	if( sflags != 0u ) {
 	  error = true;
 	}
       }
@@ -626,21 +628,21 @@ static bool command_s( const char ** const ibufpp, int * const pflagsp,
       return false;
     }
   }
-  while( sflags && **ibufpp != '\n' );
-  if( sflags ) {
+  while( sflags != 0u && **ibufpp != '\n' );
+  if( sflags != 0u ) {
     if( !subst_regex() ) {
       set_error_msg( no_prev_subst );
       return false;
     }
-    if( ( sflags & sf_r ) && !replace_subst_re_by_search_re() ) {
+    if( ( sflags & sf_r ) != 0 && !replace_subst_re_by_search_re() ) {
       return false;
     }
-    if( sflags & sf_p ) {
+    if( ( sflags & sf_p ) != 0 ) {
       pflags ^= pmask;
     }
   } else {			/* don't compile RE until suffix 'I' is parsed */
     const char * pat = get_pattern_for_s( ibufpp );
-    if( !pat ) {
+    if( pat == nullptr ) {
       return false;
     }
     const char delimiter = **ibufpp;
@@ -743,17 +745,17 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
       return ERR;
     }
     fnp = get_filename( ibufpp, false );
-    if( !fnp || !delete_lines( 1, last_addr(), isglobal ) ||
+    if( fnp == nullptr || !delete_lines( 1, last_addr(), isglobal ) ||
 	!close_sbuf() ) {
       return ERR;
     }
     if( !open_sbuf() ) {
       return FATAL;
     }
-    if( fnp[0] && fnp[0] != '!' && !set_def_filename( fnp ) ) {
+    if( fnp[0] != 0 && fnp[0] != '!' && !set_def_filename( fnp ) ) {
       return ERR;
     }
-    if( read_file( fnp[0] ? fnp : def_filename, 0 ) < 0 ) {
+    if( read_file( fnp[0] != 0 ? fnp : def_filename, 0 ) < 0 ) {
       return ERR;
     }
     reset_undo_state();
@@ -765,19 +767,19 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
       return ERR;
     }
     fnp = get_filename( ibufpp, traditional() );
-    if( !fnp ) {
+    if( fnp == nullptr ) {
       return ERR;
     }
     if( fnp[0] == '!' ) {
       set_error_msg( "Invalid redirection" );
       return ERR;
     }
-    if( fnp[0] && !set_def_filename( fnp ) ) {
+    if( fnp[0] != 0 && !set_def_filename( fnp ) ) {
       return ERR;
     }
     {
       const char * const stripped_name = strip_escapes( def_filename );
-      if( !stripped_name ) {
+      if( stripped_name == nullptr ) {
 	return ERR;
       }
       printf( "%s\n", stripped_name );
@@ -791,16 +793,16 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
       set_error_msg( "Cannot nest global commands" );
       return ERR;
     }
-    n = ( c == 'g' || c == 'G' );	/* mark matching lines */
+    n = static_cast<int> ( c == 'g' || c == 'G' );	/* mark matching lines */
     if( !check_addr_range( 1, last_addr(), addr_cnt ) ||
-	!build_active_list( ibufpp, first_addr, second_addr, n ) ) {
+	!build_active_list( ibufpp, first_addr, second_addr, n != 0 ) ) {
       return ERR;
     }
-    n = ( c == 'G' || c == 'V' );		/* interactive */
-    if( n && !get_command_suffix( ibufpp, &pflags ) ) {
+    n = static_cast<int> ( c == 'G' || c == 'V' );		/* interactive */
+    if( n != 0 && !get_command_suffix( ibufpp, &pflags ) ) {
       return ERR;
     }
-    n = exec_global( ibufpp, pflags, n );
+    n = exec_global( ibufpp, pflags, n != 0 );
     if( n != 0 ) {
       return n;
     }
@@ -814,7 +816,7 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     if( c == 'H' ) {
       verbose = !verbose;
     }
-    if( ( c == 'h' || verbose ) && errmsg[0] ) {
+    if( ( c == 'h' || verbose ) && errmsg[0] != 0 ) {
       printf( "%s\n", errmsg );
     }
     break;
@@ -911,20 +913,20 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
       second_addr = last_addr();
     }
     fnp = get_filename( ibufpp, false );
-    if( !fnp ) {
+    if( fnp == nullptr ) {
       return ERR;
     }
-    if( !def_filename[0] && fnp[0] != '!' && !set_def_filename( fnp ) ) {
+    if( def_filename[0] == 0 && fnp[0] != '!' && !set_def_filename( fnp ) ) {
       return ERR;
     }
     if( !isglobal ) {
       clear_undo_stack();
     }
-    addr = read_file( fnp[0] ? fnp : def_filename, second_addr );
+    addr = read_file( fnp[0] != 0 ? fnp : def_filename, second_addr );
     if( addr < 0 ) {
       return ERR;
     }
-    if( addr ) {
+    if( addr != 0 ) {
       set_modified( true );
     }
     break;
@@ -963,7 +965,7 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
       return ERR;
     }
     fnp = get_filename( ibufpp, false );
-    if( !fnp ) {
+    if( fnp == nullptr ) {
       return ERR;
     }
     if( addr_cnt == 0 && last_addr() == 0 ) {
@@ -971,10 +973,10 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     } else if( !check_addr_range( 1, last_addr(), addr_cnt ) ) {
       return ERR;
     }
-    if( !def_filename[0] && fnp[0] != '!' && !set_def_filename( fnp ) ) {
+    if( def_filename[0] == 0 && fnp[0] != '!' && !set_def_filename( fnp ) ) {
       return ERR;
     }
-    addr = write_file( fnp[0] ? fnp : def_filename,
+    addr = write_file( fnp[0] != 0 ? fnp : def_filename,
 		       ( c == 'W' ) ? "a" : "w", first_addr, second_addr );
     if( addr < 0 ) {
       return ERR;
@@ -1011,7 +1013,7 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     }
     break;
   case 'z':
-    if( !check_second_addr( current_addr() + !isglobal, addr_cnt ) ) {
+    if( !check_second_addr( current_addr() + static_cast<int> ( !isglobal ), addr_cnt ) ) {
       return ERR;
     }
     if( **ibufpp > '0' && **ibufpp <= '9' ) {
@@ -1033,14 +1035,14 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     if( !get_command_suffix( ibufpp, &pflags ) ) {
       return ERR;
     }
-    printf( "%d\n", addr_cnt ? second_addr : last_addr() );
+    printf( "%d\n", addr_cnt != 0 ? second_addr : last_addr() );
     break;
   case '!':
     if( unexpected_address( addr_cnt ) ) {
       return ERR;
     }
     fnp = get_shell_command( ibufpp );
-    if( !fnp ) {
+    if( fnp == nullptr ) {
       return ERR;
     }
     if( system( fnp + 1 ) < 0 ) {
@@ -1053,7 +1055,7 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     break;
   case '\n':
     if( !check_second_addr( current_addr() +
-			    ( traditional() || !isglobal ), addr_cnt ) ||
+			    static_cast<int> ( traditional() || !isglobal ), addr_cnt ) ||
 	!print_lines( second_addr, second_addr, 0 ) ) {
       return ERR;
     }
@@ -1065,7 +1067,7 @@ static int exec_command( const char ** const ibufpp, const int prev_status,
     set_error_msg( "Unknown command" );
     return ERR;
   }
-  if( pflags && !print_lines( current_addr(), current_addr(), pflags ) ) {
+  if( pflags != 0 && !print_lines( current_addr(), current_addr(), pflags ) ) {
     return ERR;
   }
   return 0;
@@ -1093,7 +1095,7 @@ static int exec_global( const char ** const ibufpp, const int pflags,
   clear_undo_stack();
   while( true ) {
     const line_t * const lp = next_active_node();
-    if( !lp ) {
+    if( lp == nullptr ) {
       break;
     }
     set_current_addr( get_line_node_addr( lp ) );
@@ -1107,7 +1109,7 @@ static int exec_global( const char ** const ibufpp, const int pflags,
 	return ERR;
       }
       *ibufpp = get_stdin_line( &len );
-      if( !*ibufpp ) {
+      if( *ibufpp == nullptr ) {
 	return ERR;			/* error */
       }
       if( len <= 0 ) {
@@ -1117,7 +1119,7 @@ static int exec_global( const char ** const ibufpp, const int pflags,
 	continue;
       }
       if( len == 2 && strcmp( *ibufpp, "&\n" ) == 0 ) {
-	if( !cmd ) {
+	if( cmd == nullptr ) {
 	  set_error_msg( no_prev_com );
 	  return ERR;
 	}
@@ -1131,7 +1133,7 @@ static int exec_global( const char ** const ibufpp, const int pflags,
       }
     }
     *ibufpp = cmd;
-    while( **ibufpp ) {
+    while( **ibufpp != 0 ) {
       const int status = exec_command( ibufpp, 0, true );
       if( status != 0 ) {
 	return status;
@@ -1181,7 +1183,7 @@ int main_loop( const bool initial_error, const bool loose ) {
       fflush( stdout );
     }
     ibufp = get_stdin_line( &len );
-    if( !ibufp ) {
+    if( ibufp == nullptr ) {
       return 2;			/* an error happened */
     }
     if( len <= 0 ) {				/* EOF on stdin ('q') */
